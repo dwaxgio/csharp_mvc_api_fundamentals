@@ -99,7 +99,7 @@ namespace MVC_API_FUNDAMENTALS.Controllers
         }
 
         // 12. Agrego método para editar
-        [HttpPost]
+        [HttpPut]
         public Reply Edit([FromBody] AnimalViewModel model)
         {
             Reply oReply = new Reply();
@@ -129,6 +129,59 @@ namespace MVC_API_FUNDAMENTALS.Controllers
                     
                     oAnimal.name = model.name;
                     oAnimal.patas = model.patas;
+
+                    // Se agrega objeto modificado a db
+                    DB.Entry(oAnimal).State = System.Data.Entity.EntityState.Modified; // Acà cambia para indicar a db cambio en objeto
+                    DB.SaveChanges();
+
+                    // Para respuesta a petición api
+                    List<ListAnimalsViewModel> lst = List(DB); // Implementa metodo de helper, que trae resultado en lista, se le pasa como parametro el contexto
+
+                    oReply.result = 1;
+                    oReply.message = "Dato eliminado: ";
+                    oReply.data = lst; // Para que el cliente no tenga que solicitar nuevamente la data, se remite listado de entidad
+                }
+
+            }
+            catch (Exception ex)
+            {
+                oReply.message = "Error, intente nuevamente..." + ex;
+            }
+            return oReply;
+        }
+
+        // 13. Agrego método para eliminar
+        [HttpDelete]
+        public Reply Delete([FromBody] AnimalViewModel model)
+        {
+            Reply oReply = new Reply();
+            oReply.result = 0;
+
+            // Método de verificación del token
+            if (!Verify(model.token))
+            {
+                oReply.message = "No autorizado";
+                return oReply;
+            }
+
+            /* La validación se utiliza del lado del cliente, indicando si esta seguro de eliminar el registro
+            //// Se puede agregar en esta sección validaciones, ej name es obligatorio... usa sección helper indicada más adelante con #
+            //if (!Validate(model)) // se envia model a Validate, si no es true, muestre error
+            //{
+            //    oReply.message = error;
+            //    return oReply;
+            //}
+            */
+
+            // 11.2 se agrega try catch
+            try
+            {
+                using (Cursomvc_apiEntities DB = new Cursomvc_apiEntities())
+                {
+                    // Se crea objeto de la entidad de la db para agregar a la db
+                    animal oAnimal = DB.animal.Find(model.id); // Acá cambia a .find en el edit
+
+                    oAnimal.idState = 0;
 
                     // Se agrega objeto modificado a db
                     DB.Entry(oAnimal).State = System.Data.Entity.EntityState.Modified; // Acà cambia para indicar a db cambio en objeto
