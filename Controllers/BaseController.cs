@@ -11,6 +11,9 @@ namespace MVC_API_FUNDAMENTALS.Controllers
     // 6. Creo BaseController
     public class BaseController : ApiController
     {
+        // Variable globarl para metodos en helper de clase AnimalController
+        public string error = "";
+
         // Método para verificar si Token es válido
         public bool Verify(string pToken)
         {
